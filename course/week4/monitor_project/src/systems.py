@@ -200,7 +200,77 @@ class RobustSentimentSystem(SentimentClassifierSystem):
     # loss1: torch.Tensor (length = # of group 1 elements in batch)
     # loss: torch.Tensor (single element)
     # =================================
+    loss0 = torch.mean(loss[groups == 0])
+    loss1 = torch.mean(loss[groups == 1])
+    loss = torch.maximum(loss0, loss1) 
+    with torch.no_grad():
+      # Compute accuracy using the logits and labels
+      preds = torch.round(torch.sigmoid(logits))
+      num_correct = torch.sum(preds.squeeze(1) == labels)
+      num_total = labels.size(0)
+      accuracy = num_correct / float(num_total)
 
+    return loss, accuracy
+
+class RobustSentimentSystem_naive(SentimentClassifierSystem):
+  """A Pytorch Lightning system to train a model to classify sentiment of 
+  product reviews using DRO (assuming group knowledge).
+
+  Arguments
+  ---------
+  config (dotmap.DotMap): a configuration file with hyperparameters.
+    See config.py for an example.
+  """
+
+  def _common_step(self, batch, _):
+    """
+    Arguments
+    ---------
+    embs (torch.Tensor): embeddings of review text
+      shape: batch_size x 768
+    labels (torch.LongTensor): binary labels (0 or 1)
+      shape: batch_size
+    groups (torch.LongTensor): english or spanish (0 or 1)
+      shape: batch_size
+    """
+    embs = batch['embedding']
+    labels = batch['label']
+    # `groups` is a tensor of 0s and 1s where 1 indicates the training
+    # example is in the English group. 
+    groups = batch['group']
+
+    logits = self.model(embs)
+
+    # compute loss per element (no reduction)
+    loss = F.binary_cross_entropy_with_logits(
+      logits.squeeze(1), labels.float(), reduction='none')
+
+    # =================================
+    # FILL ME OUT
+    # 
+    # Compute the DRO objective. The variable `loss` above 
+    # is a torch.FloatTensor of the same length as the minibatch.
+    # 
+    # Write code to compute the average loss per group. Then 
+    # compute the maximum over the group averages. Overwrite the 
+    # `loss` variable with this value. This resulting loss is the 
+    # one we will optimize using SGD.
+    # 
+    # Pseudocode:
+    # --
+    # loss0 = mean of terms in `loss` belonging to group 0
+    # loss1 = mean of terms in `loss` belonging to group 1
+    # loss = max(loss0, loss1)
+    # 
+    # Types:
+    # --
+    # loss0: torch.Tensor (length = # of group 0 elements in batch)
+    # loss1: torch.Tensor (length = # of group 1 elements in batch)
+    # loss: torch.Tensor (single element)
+    # =================================
+    loss0 = torch.mean(loss[groups == 0])
+    loss1 = torch.mean(loss[groups == 1])
+    loss = sum([loss0, loss1]) # loss0 + loss1
     with torch.no_grad():
       # Compute accuracy using the logits and labels
       preds = torch.round(torch.sigmoid(logits))

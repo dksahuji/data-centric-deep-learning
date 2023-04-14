@@ -50,6 +50,10 @@ class ProductReviewEmbeddings(Dataset):
     # Notes:
     # --
     # Convert tokens to lowercase when updating vocab.
+    for review in self.data.review:
+      tokens = review.split()
+      for word in tokens:
+        vocab[word.lower()] += 1
     # ===============================
     return dict(vocab)
 
@@ -109,6 +113,10 @@ class ProductReviewStream(Dataset):
     # Type:
     # --
     # vocab: dict[str, int]
+    for review in self.data.review:
+      tokens = review.split()
+      for word in tokens:
+        vocab[word.lower()] += 1
     # ===============================
     return dict(vocab)
 

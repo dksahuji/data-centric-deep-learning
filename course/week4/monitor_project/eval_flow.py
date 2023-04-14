@@ -83,10 +83,12 @@ class EvalClassifier(FlowSpec):
 
     log_file = join(LOG_DIR, 'eval_flow', 'en_results.json')
     os.makedirs(os.path.dirname(log_file), exist_ok = True)
+    print(log_file)
     to_json(en_results, log_file)  # save to disk
 
     log_file = join(LOG_DIR, 'eval_flow', 'es_results.json')
     os.makedirs(os.path.dirname(log_file), exist_ok = True)
+    print(log_file)
     to_json(es_results, log_file)  # save to disk
 
     self.next(self.end)
