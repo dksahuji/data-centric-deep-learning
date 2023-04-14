@@ -5,7 +5,7 @@
     },
     "model": {
       "name": "mlp",
-      "width": 16
+      "width": 32
     },
     "optimizer": {
       "max_epochs": 10,

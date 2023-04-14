@@ -14,7 +14,8 @@ from scipy import ndimage
 
 
 def get_best_shift(img):
-  cy, cx = ndimage.measurements.center_of_mass(img)
+  #cy, cx = ndimage.measurements.center_of_mass(img)
+  cy, cx = ndimage.center_of_mass(img)
 
   rows, cols = img.shape
   shiftx = np.round(cols / 2.0 - cx).astype(int)

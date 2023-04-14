@@ -1,5 +1,7 @@
 """This flow will train a neural network to perform sentiment classification 
 for the beauty products reviews.
+
+python flow_conflearn.py --no-linter run
 """
 
 import os
@@ -168,9 +170,26 @@ class TrainIdentifyReview(FlowSpec):
       # --
       # probs_: np.array[float] (shape: |test set|)
       # ===============================================
+      # pylint: enable=E1101
+      X_train, X_test = torch.from_numpy(X[train_index]), torch.from_numpy(X[test_index])
+      y_train, y_test = torch.from_numpy(y[train_index]), torch.from_numpy(y[test_index])
+
+      ds_train = TensorDataset(X_train, y_train)
+      ds_test = TensorDataset(X_test, y_test)
+      dl_train = DataLoader(ds_train, batch_size=self.config.train.optimizer.batch_size, shuffle=True)
+      dl_test = DataLoader(ds_test, batch_size=self.config.train.optimizer.batch_size)
+      
+      # pylint: enable=E1101
+      system = SentimentClassifierSystem(self.config)
+      trainer = Trainer(max_epochs=self.config.train.optimizer.max_epochs)
+      trainer.fit(system, dl_train, dl_test)
+
+      probs_ = trainer.predict(system, dataloaders=dl_test, ckpt_path='best')
+      probs_ = torch.cat(probs_).squeeze(1).numpy()
+      
       assert probs_ is not None, "`probs_` is not defined."
       probs[test_index] = probs_
-
+    
     # create a single dataframe with all input features
     all_df = pd.concat([
       self.dm.train_dataset.data,
@@ -212,6 +231,7 @@ class TrainIdentifyReview(FlowSpec):
     # --
     # ranked_label_issues: List[int]
     # =============================
+    ranked_label_issues = find_label_issues(self.all_df['label'], prob, return_indices_ranked_by='self_confidence')
     assert ranked_label_issues is not None, "`ranked_label_issues` not defined."
 
     # save this to class
@@ -308,6 +328,9 @@ class TrainIdentifyReview(FlowSpec):
     # dm.dev_dataset.data = dev slice of self.all_df
     # dm.test_dataset.data = test slice of self.all_df
     # # ====================================
+    dm.train_dataset.data = self.all_df[:train_size]
+    dm.dev_dataset.data = self.all_df[train_size: train_size+dev_size]
+    dm.test_dataset.data = self.all_df[train_size+dev_size:]
 
     # start from scratch
     system = SentimentClassifierSystem(self.config)
@@ -320,8 +343,8 @@ class TrainIdentifyReview(FlowSpec):
 
     pprint(results)
 
-    log_file = join(Path(__file__).resolve().parent.parent, 
-      f'logs', 'post-results.json')
+    log_file = join(Path(__file__).resolve().parent, 
+      f'log', 'post-results.json')
 
     os.makedirs(os.path.dirname(log_file), exist_ok = True)
     to_json(results, log_file)  # save to disk

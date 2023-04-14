@@ -102,7 +102,7 @@ class DigitClassifierFlow(FlowSpec):
 
   @step
   def regression_test(self):
-    r"""Runs an integration test. Saves results to a log file."""
+    r"""Runs an regression test. Saves results to a log file."""
 
     test = MNISTRegressionTest()
     test.test(self.trainer, self.system)

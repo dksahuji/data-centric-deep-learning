@@ -51,8 +51,8 @@ class MovieStatsFlow(FlowSpec):
         # all the unique genres.
         self.genres = {
             genre for genres in self.dataframe["genres"] for genre in genres.split("|")
-        }
-        self.genres = list(self.genres)
+        } #set
+        self.genres = list(self.genres)#list
 
         # We want to compute some statistics for each genre. The 'foreach'
         # keyword argument allows us to compute the statistics for each genre in
@@ -72,8 +72,9 @@ class MovieStatsFlow(FlowSpec):
 
         # Find all the movies that have this genre and build a dataframe with
         # just those movies and just the columns of interest.
-        selector = self.dataframe["genres"].apply(lambda row: self.genre in row)
+        selector = self.dataframe["genres"].apply(lambda row: self.genre in row) # where genre is in genres
         self.dataframe = self.dataframe[selector]
+        
         self.dataframe = self.dataframe[["movie_title", "genres", "gross"]]
 
         # Get some statistics on the gross box office for these titles.

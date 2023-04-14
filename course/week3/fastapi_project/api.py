@@ -129,6 +129,7 @@ def predict(request: Request, body: InferenceInput):
     # Pseudocode:
     # --
     # logits = ... (use system)
+    logits = system.predict_step(im)
     # 
     # Types:
     # --
@@ -150,6 +151,7 @@ def predict(request: Request, body: InferenceInput):
     # Pseudocode:
     # --
     # probs = ...do something to logits...
+    probs = F.softmax(logits, dim=-1)
     # 
     # Types:
     # --

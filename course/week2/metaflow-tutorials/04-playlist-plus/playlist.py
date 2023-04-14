@@ -11,6 +11,7 @@ def get_python_version():
     import platform
 
     versions = {"2": "2.7.15", "3": "3.7.3"}
+    print("platform.python_version_tuple()", platform.python_version_tuple())
     return versions[platform.python_version_tuple()[0]]
 
 

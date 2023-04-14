@@ -87,6 +87,8 @@ class DigitClassifierSystem(pl.LightningModule):
     super().__init__()
     self.save_hyperparameters()
     self.config = config
+    self.training_step_outputs = []
+
 
     # make directory to store data
     os.makedirs(config.system.data.root, exist_ok = True)
@@ -150,7 +152,7 @@ class DigitClassifierSystem(pl.LightningModule):
     loss, acc = self._common_step(train_batch, batch_idx)
     self.log_dict({'train_loss': loss, 'train_acc': acc},
       on_step=True, on_epoch=False, prog_bar=True, logger=True)
-    return loss
+    return {'loss' : loss, 'my_bane': acc}
 
   def validation_step(self, dev_batch, batch_idx):
     loss, acc = self._common_step(dev_batch, batch_idx)
@@ -159,7 +161,7 @@ class DigitClassifierSystem(pl.LightningModule):
   def validation_epoch_end(self, outputs):
     avg_loss = torch.mean(torch.stack([o[0] for o in outputs]))
     avg_acc = torch.mean(torch.stack([o[1] for o in outputs]))
-    self.log_dict({'dev_loss': avg_loss, 'dev_acc': avg_acc},
+    self.log_dict({'dev_loss': avg_loss, 'dev_acc_haha': avg_acc},
       on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
   def test_step(self, test_batch, batch_idx):

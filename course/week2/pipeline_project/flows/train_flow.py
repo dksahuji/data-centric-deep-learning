@@ -20,6 +20,13 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from src.system import MNISTDataModule, DigitClassifierSystem
 from src.utils import load_config, to_json
 
+from pytorch_lightning.loggers import CSVLogger
+import pytorch_lightning as pl
+
+csv_logger = CSVLogger(
+    save_dir='./csv_logger/',
+    name='train_flow_logger'
+)
 
 class DigitClassifierFlow(FlowSpec):
   r"""A flow that trains a image classifier to recognize handwritten
@@ -37,9 +44,13 @@ class DigitClassifierFlow(FlowSpec):
     r"""Start node.
     Set random seeds for reproducibility.
     """
+    self.generator = torch.Generator()
     random.seed(42)
     np.random.seed(42)
     torch.manual_seed(42)
+    self.generator.manual_seed(42)
+    pl.seed_everything(seed)
+
 
     self.next(self.init_system)
 
@@ -60,15 +71,17 @@ class DigitClassifierFlow(FlowSpec):
     # a callback to save best model weights
     checkpoint_callback = ModelCheckpoint(
       dirpath = config.system.save_dir,
-      monitor = 'dev_loss',
-      mode = 'min',    # look for lowest `dev_loss`
+      monitor = 'dev_acc_haha', #'dev_loss',
+      mode = 'max',    # look for lowest `dev_loss`
       save_top_k = 1,  # save top 1 checkpoints
       verbose = True,
     )
 
     trainer = Trainer(
       max_epochs = config.system.optimizer.max_epochs,
-      callbacks = [checkpoint_callback])
+      callbacks = [checkpoint_callback],
+      logger=[csv_logger]
+      )
 
     # when we save these objects to a `step`, they will be available
     # for use in the next step, through not steps after.

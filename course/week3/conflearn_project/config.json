@@ -8,7 +8,7 @@
       "batch_size": 32,
       "lr": 3e-4
     },
-    "ckpt_dir": "./log"
+    "ckpt_dir": "./ckpts"
   },
   "inspect": {
     "num_cv": 5

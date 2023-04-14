@@ -21,7 +21,7 @@ from sklearn.model_selection import KFold
 from src.system import ReviewDataModule, SentimentClassifierSystem
 from src.utils import load_config, to_json
 from src.consts import DATA_DIR
-
+import pdb
 
 class TrainBaseline(FlowSpec):
   r"""A MetaFlow that trains a sentiment classifier on reviews of luxury beauty
@@ -100,9 +100,10 @@ class TrainBaseline(FlowSpec):
     # print results to command line
     pprint(results)
 
-    log_file = join(Path(__file__).resolve().parent.parent, 
-      f'logs', 'pre-results.json')
-
+    log_file = join(Path(__file__).resolve().parent, 
+      f'log', 'pre-results.json')
+    print(log_file)
+    #pdb.set_trace()
     os.makedirs(os.path.dirname(log_file), exist_ok = True)
     to_json(results, log_file)  # save to disk
 

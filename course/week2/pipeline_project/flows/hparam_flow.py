@@ -79,7 +79,9 @@ class DigitClassifierFlow(FlowSpec):
     self.system = system
     self.trainer = trainer
     self.callback = checkpoint_callback
-
+    print("dir callback: ", dir(self.callback))
+    print("help callback: ", help(self.callback))
+    print("", self.callback)
     self.next(self.find_best)
 
   @step
@@ -90,9 +92,9 @@ class DigitClassifierFlow(FlowSpec):
     # need a few of them so no need to call `merge_artifacts`
     self.dm = inputs[0].dm
 
-    scores = []        # populate with scores from each hparams
-    best_index = None  # replace with best index
-    
+    scores = [input.callback.best_model_score for input in inputs ]        # populate with scores from each hparams
+    best_index = np.argmin(scores)  # replace with best index
+
     # ================================
     # FILL ME OUT
     # 
